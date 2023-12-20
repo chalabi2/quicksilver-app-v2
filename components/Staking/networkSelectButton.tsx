@@ -1,57 +1,11 @@
 // CustomMenu.tsx
 
 import { ChevronDownIcon } from '@chakra-ui/icons';
-import {
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  Button,
-  Flex,
-  Image,
-  Text,
-  useDisclosure,
-} from '@chakra-ui/react';
+import { Menu, MenuButton, MenuList, MenuItem, Button, Flex, Image, Text, useDisclosure } from '@chakra-ui/react';
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import { BsArrowDown } from 'react-icons/bs';
 
-const networks = [
-  {
-    value: 'ATOM',
-    logo: '/quicksilver-app-v2/img/networks/atom.svg',
-    qlogo: '/quicksilver-app-v2/img/networks/q-atom.svg',
-    name: 'Cosmos Hub',
-    chainName: 'cosmoshub',
-  },
-  {
-    value: 'OSMO',
-    logo: '/quicksilver-app-v2/img/networks/osmosis.svg',
-    qlogo: '/quicksilver-app-v2/img/networks/qosmo.svg',
-    name: 'Osmosis',
-    chainName: 'osmosis',
-  },
-  {
-    value: 'STARS',
-    logo: '/quicksilver-app-v2/img/networks/stargaze.svg',
-    qlogo: '/quicksilver-app-v2/img/networks/stargaze-2.png',
-    name: 'Stargaze',
-    chainName: 'stargaze',
-  },
-  {
-    value: 'REGEN',
-    logo: '/quicksilver-app-v2/img/networks/regen.svg',
-    qlogo: '/quicksilver-app-v2/img/networks/regen.svg',
-    name: 'Regen',
-    chainName: 'regen',
-  },
-  {
-    value: 'SOMM',
-    logo: '/quicksilver-app-v2/img/networks/sommelier.png',
-    qlogo: '/quicksilver-app-v2/img/networks/sommelier.png',
-    name: 'Sommelier',
-    chainName: 'sommelier',
-  },
-];
+import { networks } from '@/state/chains/prod';
 
 interface CustomMenuProps {
   buttonTextColor?: string;
@@ -59,11 +13,7 @@ interface CustomMenuProps {
   setSelectedNetwork: (network: (typeof networks)[0]) => void;
 }
 
-export const NetworkSelect: React.FC<CustomMenuProps> = ({
-  buttonTextColor = 'white',
-  selectedOption,
-  setSelectedNetwork,
-}) => {
+export const NetworkSelect: React.FC<CustomMenuProps> = ({ buttonTextColor = 'white', selectedOption, setSelectedNetwork }) => {
   const handleOptionClick = (network: (typeof networks)[0]) => {
     setSelectedNetwork(network);
   };
@@ -81,10 +31,11 @@ export const NetworkSelect: React.FC<CustomMenuProps> = ({
   }
 
   const { isOpen, onOpen, onClose } = useDisclosure();
-  
+
   return (
     <Menu>
       <MenuButton
+        borderRadius={100}
         position="relative"
         zIndex={5}
         maxW="150px"
@@ -100,11 +51,7 @@ export const NetworkSelect: React.FC<CustomMenuProps> = ({
       >
         {selectedOption.value.toUpperCase()}
       </MenuButton>
-      <MenuList
-        borderColor="rgba(35,35,35,1)"
-        mt={1}
-        bgColor="rgba(35,35,35,1)"
-      >
+      <MenuList borderColor="rgba(35,35,35,1)" mt={1} bgColor="rgba(35,35,35,1)">
         {networks.map((network) => (
           <MenuItem
             key={network.value}
@@ -117,22 +64,9 @@ export const NetworkSelect: React.FC<CustomMenuProps> = ({
             }}
             onClick={() => handleOptionClick(network)}
           >
-            <Flex
-              justifyContent="center"
-              alignItems="center"
-              flexDirection="row"
-            >
-              <Image
-                alt={network.name.toLowerCase()}
-                px={4}
-                h="40px"
-                src={network.logo}
-              />
-              <Text
-                color="white"
-                fontSize="20px"
-                textAlign="center"
-              >
+            <Flex justifyContent="center" alignItems="center" flexDirection="row">
+              <Image alt={network.name.toLowerCase()} px={4} h="40px" src={network.logo} />
+              <Text color="white" fontSize="20px" textAlign="center">
                 {network.name}
               </Text>
             </Flex>
