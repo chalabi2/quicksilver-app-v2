@@ -34,3 +34,5 @@ Please ensure your IDE is configured to use Typescript v4.9.3
 ### Repo
 
 This repo was forked by, merged too, and is currently being worked on at [Repo Link](https://github.com/quicksilver-zone/quicksilver/tree/bunDev)
+
+This repo is now deprecated and any additional changes to the application will be merged to this repo (for the sake of continuity) upon the applications completion.
