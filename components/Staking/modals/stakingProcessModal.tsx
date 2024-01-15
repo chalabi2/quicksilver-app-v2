@@ -13,22 +13,28 @@ import {
   Stat,
   StatLabel,
   StatNumber,
-  Toast,
   Spinner,
-  useToast,
   Input,
   Grid,
   Checkbox,
 } from '@chakra-ui/react';
+import { coins, StdFee } from '@cosmjs/amino';
 import { useChain } from '@cosmos-kit/react';
 import styled from '@emotion/styled';
+import { bech32 } from 'bech32';
+import { assets } from 'chain-registry';
+import chains from 'chain-registry';
+import { cosmos } from 'interchain-query';
+
 import React, { useEffect, useState } from 'react';
 
-import { useQueryHooks } from '@/hooks';
-import { useZoneQuery } from '@/hooks/useQueries';
-import { liquidStakeTx, unbondLiquidStakeTx } from '@/tx/liquidStakeTx';
-
 import { MultiModal } from './validatorSelectionModal';
+
+import { useZoneQuery } from '@/hooks/useQueries';
+
+import { shiftDigits } from '@/utils';
+
+import { useTx } from '@/hooks';
 
 const ChakraModalContent = styled(ModalContent)`
   position: relative;
@@ -83,14 +89,26 @@ export const StakingProcessModal: React.FC<StakingModalProps> = ({ isOpen, onClo
   const [isSigning, setIsSigning] = useState<boolean>(false);
   const [isError, setIsError] = useState<boolean>(false);
 
-  const { address, getSigningStargateClient } = useChain(selectedOption?.chainName || '');
+  let newChainName: string | undefined;
+  if (selectedOption?.chainId === 'provider') {
+    newChainName = 'rsprovidertestnet';
+  } else if (selectedOption?.chainId === 'elgafar-1') {
+    newChainName = 'stargazetestnet';
+  } else if (selectedOption?.chainId === 'osmo-test-5') {
+    newChainName = 'osmosistestnet';
+  } else if (selectedOption?.chainId === 'regen-redwood-1') {
+    newChainName = 'regen';
+  } else {
+    // Default case
+    newChainName = selectedOption?.chainName;
+  }
+
+  const { address } = useChain(newChainName || '');
 
   const labels = ['Choose validators', `Set weights`, `Sign & Submit`, `Receive q${selectedOption?.value}`];
   const [isModalOpen, setModalOpen] = useState(false);
 
   const [selectedValidators, setSelectedValidators] = React.useState<{ name: string; operatorAddress: string }[]>([]);
-
-  const [resp, setResp] = useState('');
 
   const advanceStep = () => {
     if (selectedValidators.length > 0) {
@@ -106,16 +124,11 @@ export const StakingProcessModal: React.FC<StakingModalProps> = ({ isOpen, onClo
     }
   };
 
-  const toast = useToast();
-
-  const totalWeights = 1;
   const numberOfValidators = selectedValidators.length;
 
   // Calculate the weight for each validator
-  const weightPerValidator = numberOfValidators ? (totalWeights / numberOfValidators).toFixed(4) : '0';
 
   const [weights, setWeights] = useState<{ [key: string]: number }>({});
-  const [totalWeight, setTotalWeight] = useState<string>('0');
 
   const [isCustomValid, setIsCustomValid] = useState(true);
   const [defaultWeight, setDefaultWeight] = useState(0);
@@ -128,16 +141,27 @@ export const StakingProcessModal: React.FC<StakingModalProps> = ({ isOpen, onClo
   // Modify the handleWeightChange function
   const handleWeightChange = (e: React.ChangeEvent<HTMLInputElement>, validatorName: string) => {
     const value = Number(e.target.value);
-    setWeights({
-      ...weights,
+    setWeights((prevWeights) => ({
+      ...prevWeights,
       [validatorName]: value,
-    });
+    }));
 
     // Update the total weight as string
     const newTotalWeight = Object.values({ ...weights, [validatorName]: value }).reduce((acc, val) => acc + val, 0);
-    setTotalWeight(newTotalWeight.toString());
 
-    setIsCustomValid(newTotalWeight === 100); // Validation for custom weights
+    setIsCustomValid(newTotalWeight === 100);
+  };
+
+  const calculateIntents = () => {
+    return selectedValidators.map((validator) => {
+      // For each validator, calculate the weight based on whether default weights are used
+      const weight = useDefaultWeights ? defaultWeight : weights[validator.operatorAddress];
+
+      return {
+        address: validator.operatorAddress,
+        intent: weight.toFixed(4), // Ensure 4 decimal places
+      };
+    });
   };
 
   // Calculate defaultWeight as string
@@ -147,55 +171,114 @@ export const StakingProcessModal: React.FC<StakingModalProps> = ({ isOpen, onClo
 
   const [useDefaultWeights, setUseDefaultWeights] = useState(true);
 
+  useEffect(() => {
+    if (!useDefaultWeights && selectedValidators.length > 0) {
+      const totalWeight = calculateIntents().reduce((acc, intent) => acc + parseFloat(intent.intent), 0);
+      if (totalWeight !== 1) {
+        const lastValidator = selectedValidators[selectedValidators.length - 1];
+        setWeights((prevWeights) => ({
+          ...prevWeights,
+          [lastValidator.operatorAddress]: (1 - (totalWeight - (weights[lastValidator.operatorAddress] ?? 0) / 100)) * 100,
+        }));
+      }
+    }
+  }, [selectedValidators, weights, useDefaultWeights]);
+
   interface ValidatorsSelect {
     address: string;
     intent: number;
   }
 
-  const intents: ValidatorsSelect[] = selectedValidators.map((validator) => ({
-    address: validator.operatorAddress,
-    intent: useDefaultWeights ? defaultWeight : weights[validator.operatorAddress] || 0,
-  }));
+  const intents: ValidatorsSelect[] = selectedValidators.map((validator) => {
+    const weightAsFraction = useDefaultWeights ? defaultWeight : (weights[validator.operatorAddress] ?? 0) / 100;
 
-  const { data: zone, isLoading: isZoneLoading, isError: isZoneError } = useZoneQuery(selectedOption?.chainId ?? '');
+    return {
+      address: validator.operatorAddress,
+      intent: weightAsFraction,
+    };
+  });
+
+  const { data: zone } = useZoneQuery(selectedOption?.chainId ?? '');
+
+  const valToByte = (val: number) => {
+    if (val > 1) {
+      val = 1;
+    }
+    if (val < 0) {
+      val = 0;
+    }
+    return Math.abs(val * 200);
+  };
+
+  const addValidator = (valAddr: string, weight: number) => {
+    let { words } = bech32.decode(valAddr);
+    let wordsUint8Array = new Uint8Array(bech32.fromWords(words));
+    let weightByte = valToByte(weight);
+    return Buffer.concat([Buffer.from([weightByte]), wordsUint8Array]);
+  };
+
+  let memoBuffer = Buffer.alloc(0);
+
+  if (intents.length > 0) {
+    intents.forEach((val) => {
+      memoBuffer = Buffer.concat([memoBuffer, addValidator(val.address, val.intent)]);
+    });
+    memoBuffer = Buffer.concat([Buffer.from([0x02, memoBuffer.length]), memoBuffer]);
+  }
+
+  let memo = memoBuffer.length > 0 && selectedValidators.length > 0 ? memoBuffer.toString('base64') : '';
+
+  let numericAmount = Number(tokenAmount);
+
+  if (isNaN(numericAmount) || numericAmount <= 0) {
+    numericAmount = 0;
+  }
+
+  const smallestUnitAmount = numericAmount * Math.pow(10, 6);
+
+  const { send } = cosmos.bank.v1beta1.MessageComposer.withTypeUrl;
+
+  const msgSend = send({
+    fromAddress: address ?? '',
+    toAddress: zone?.depositAddress?.address ?? '',
+    amount: coins(smallestUnitAmount.toFixed(0), zone?.baseDenom ?? ''),
+  });
+
+  const mainTokens = assets.find(({ chain_name }) => chain_name === newChainName);
+  const fees = chains.chains.find(({ chain_name }) => chain_name === newChainName)?.fees?.fee_tokens;
+  const mainDenom = mainTokens?.assets[0].base ?? '';
+  const fixedMinGasPrice = fees?.find(({ denom }) => denom === mainDenom)?.average_gas_price ?? '';
+  const feeAmount = shiftDigits(fixedMinGasPrice, 6);
+
+  const fee: StdFee = {
+    amount: [
+      {
+        denom: mainDenom,
+        amount: feeAmount.toString(),
+      },
+    ],
+    gas: '500000',
+  };
+
+  const { tx } = useTx(newChainName ?? '');
 
   const handleLiquidStake = async (event: React.MouseEvent) => {
-    const numericAmount = Number(tokenAmount);
-    const smallestUnitAmount = numericAmount * Math.pow(10, 6);
-
+    event.preventDefault();
+    setIsSigning(true);
+    setTransactionStatus('Pending');
     try {
-      setIsSigning(true);
-      const response = await liquidStakeTx(
-        getSigningStargateClient,
-        setResp,
-        selectedOption?.chainName || '',
-        selectedOption?.chainId || '',
-        address,
-        toast,
-        setIsError,
-        setIsSigning,
-        intents,
-        smallestUnitAmount,
-        zone,
-      )(event);
-
-      // Parse the response
-      const parsedResponse = JSON.parse(resp);
-
-      if (parsedResponse && parsedResponse.code === 0) {
-        // Successful transaction
-        setStep(4);
-        setTransactionStatus('Success');
-      } else {
-        // Unsuccessful transaction
-        setIsError(true);
-        setTransactionStatus('Failed');
-      }
+      const result = await tx([msgSend], {
+        memo,
+        fee,
+        onSuccess: () => {
+          setStep(4);
+          setTransactionStatus('Success');
+        },
+      });
     } catch (error) {
       console.error('Transaction failed', error);
-      setIsSigning(false);
-      setIsError(true);
       setTransactionStatus('Failed');
+      setIsError(true);
     } finally {
       setIsSigning(false);
     }
@@ -233,7 +316,11 @@ export const StakingProcessModal: React.FC<StakingModalProps> = ({ isOpen, onClo
   };
 
   const handleStepOneButtonClick = () => {
-    if (check) {
+    // Check if only one validator is selected
+    if (selectedValidators.length === 1) {
+      setUseDefaultWeights(true);
+      setStep(3); // Skip directly to step 3
+    } else if (check) {
       // If checkbox is checked, skip directly to step 3
       setStep(3);
     } else {
@@ -244,6 +331,20 @@ export const StakingProcessModal: React.FC<StakingModalProps> = ({ isOpen, onClo
         advanceStep();
       }
     }
+  };
+
+  type Weights = {
+    [key: string]: number;
+  };
+
+  const handleEqualWeightAssignment = () => {
+    const numberOfValidators = selectedValidators.length;
+    const equalWeight = (1 / numberOfValidators).toFixed(4);
+
+    // Update the state with new weights
+    setDefaultWeight(Number(equalWeight));
+    setUseDefaultWeights(true);
+    advanceStep();
   };
 
   return (
@@ -344,15 +445,30 @@ export const StakingProcessModal: React.FC<StakingModalProps> = ({ isOpen, onClo
                     mt={4}
                     width="55%"
                     _hover={{
-                      bgColor: '#181818',
+                      bgColor: 'complimentary.500',
                     }}
                     onClick={handleStepOneButtonClick}
                   >
-                    {check ? 'Skip to Step 3' : selectedValidators.length > 0 ? 'Next' : 'Choose Validators'}
+                    {check ? 'Sign & Submit' : selectedValidators.length > 0 ? 'Next' : 'Choose Validators'}
                   </Button>
                   {selectedValidators.length === 0 && (
                     <Flex mt={'6'} flexDir={'row'} gap="3">
-                      <Checkbox _selected={{ bgColor: 'transparent' }} isChecked={check} onChange={handleCheck} colorScheme="orange" />
+                      <Checkbox
+                        _selected={{ bgColor: 'transparent' }}
+                        _active={{
+                          borderColor: 'complimentary.900',
+                        }}
+                        _hover={{
+                          borderColor: 'complimentary.900',
+                        }}
+                        _focus={{
+                          borderColor: 'complimentary.900',
+                          boxShadow: '0 0 0 3px #FF8000',
+                        }}
+                        isChecked={check}
+                        onChange={handleCheck}
+                        colorScheme="orange"
+                      />
                       <Text>Proceed with existing intent?</Text>
                     </Flex>
                   )}
@@ -376,14 +492,25 @@ export const StakingProcessModal: React.FC<StakingModalProps> = ({ isOpen, onClo
                   </Text>
                   <HStack mt={4} justifyContent={'center'} alignItems={'center'}>
                     <Button
-                      onClick={() => {
-                        setUseDefaultWeights(true);
-                        advanceStep();
+                      _hover={{
+                        bgColor: 'complimentary.500',
                       }}
+                      minW={'100px'}
+                      onClick={handleEqualWeightAssignment}
                     >
-                      Default
+                      Equal
                     </Button>
-                    <Button onClick={handleCustomWeightMode}>Custom</Button>
+                    {selectedValidators.length > 1 && (
+                      <Button
+                        minW={'100px'}
+                        _hover={{
+                          bgColor: 'complimentary.500',
+                        }}
+                        onClick={handleCustomWeightMode}
+                      >
+                        Custom
+                      </Button>
+                    )}
                   </HStack>
                   <Button
                     position={'absolute'}
@@ -413,16 +540,32 @@ export const StakingProcessModal: React.FC<StakingModalProps> = ({ isOpen, onClo
                   <Text mt={2} textAlign={'center'} fontWeight={'light'} fontSize="lg" color="white">
                     The total weight must equal 100
                   </Text>
-                  <Grid mt={2} templateColumns={`repeat(${Math.ceil(Math.sqrt(selectedValidators.length))}, 1fr)`} gap={4}>
+                  <Grid mt={2} templateColumns={`repeat(${Math.ceil(Math.sqrt(selectedValidators.length))}, 1fr)`} gap={8}>
                     {selectedValidators.map((validator, index) => (
                       <Flex key={validator.operatorAddress} flexDirection={'column'} alignItems={'center'}>
                         <Text fontSize="sm" color="white" mb={2}>
-                          {validator.name}
+                          {validator.name.split(' ').length > 1 && validator.name.length > 9
+                            ? `${validator.name.split(' ')[0]}...`
+                            : validator.name}
                         </Text>
                         <Input
+                          _active={{
+                            borderColor: 'complimentary.900',
+                          }}
+                          _selected={{
+                            borderColor: 'complimentary.900',
+                          }}
+                          _hover={{
+                            borderColor: 'complimentary.900',
+                          }}
+                          _focus={{
+                            borderColor: 'complimentary.900',
+                            boxShadow: '0 0 0 3px #FF8000',
+                          }}
+                          color="complimentary.900"
                           type="number"
                           width="55px"
-                          placeholder=""
+                          placeholder="0"
                           onChange={(e) => handleWeightChange(e, validator.operatorAddress)}
                         />
                       </Flex>
@@ -459,6 +602,16 @@ export const StakingProcessModal: React.FC<StakingModalProps> = ({ isOpen, onClo
                     <Text fontWeight={'bold'} fontSize="lg" w="250px" textAlign={'left'} color="white">
                       You’re going to liquid stake {tokenAmount} {selectedOption?.value} on Quicksilver
                     </Text>
+                    {selectedValidators.length > 0 && (
+                      <Flex mt={2} textAlign={'left'} alignItems="baseline" gap="2">
+                        <Text mt={2} textAlign={'left'} fontWeight={'bold'} fontSize="lg" color="white">
+                          {selectedValidators.length === 1 ? 'Selected Validator:' : 'Selected Validators:'}
+                        </Text>
+                        <Text color="complimentary.900">
+                          {selectedValidators.length === 1 ? selectedValidators[0].name : `${selectedValidators.length} / 8`}
+                        </Text>
+                      </Flex>
+                    )}
                     <HStack mt={2} textAlign={'left'} fontWeight={'light'} fontSize="lg" color="white">
                       <Text fontWeight={'bold'}>Receiving:</Text>
                       <Text color="complimentary.900">
@@ -471,7 +624,7 @@ export const StakingProcessModal: React.FC<StakingModalProps> = ({ isOpen, onClo
                     <Button
                       w="55%"
                       _hover={{
-                        bgColor: '#181818',
+                        bgColor: 'complimentary.500',
                       }}
                       mt={4}
                       onClick={(event) => handleLiquidStake(event)}
@@ -512,7 +665,7 @@ export const StakingProcessModal: React.FC<StakingModalProps> = ({ isOpen, onClo
                       <Button
                         w="55%"
                         _hover={{
-                          bgColor: '#181818',
+                          bgColor: 'complimentary.500',
                         }}
                         mt={4}
                         onClick={() => setStep(1)}

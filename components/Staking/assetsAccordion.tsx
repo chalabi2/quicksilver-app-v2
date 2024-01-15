@@ -17,14 +17,39 @@ type AssetsAccordianProps = {
 
 export const AssetsAccordian: React.FC<AssetsAccordianProps> = ({ selectedOption, balance, qBalance }) => {
   const qAssets = shiftDigits(qBalance, -6);
+
   const qAssetsDisplay = qAssets.includes('.') ? qAssets.substring(0, qAssets.indexOf('.') + 3) : qAssets;
-  const balanceDisplay = balance.includes('.') ? balance.substring(0, balance.indexOf('.') + 3) : balance;
+  const balanceDisplay = balance.includes('.') ? balance.substring(0, balance.indexOf('.') + 4) : balance;
 
   const renderQAssets = () => {
     if (qBalance) {
-      return qAssetsDisplay;
+      return (
+        <Text pr={2} color="complimentary.900">
+          {qAssetsDisplay}
+        </Text>
+      );
     } else {
-      return <SkeletonCircle size="2" startColor="complimentary.900" endColor="complimentary.400" />;
+      return (
+        <Box mr={2} display="inline-block">
+          <SkeletonCircle size="2" startColor="complimentary.900" endColor="complimentary.400" />
+        </Box>
+      );
+    }
+  };
+
+  const renderAssets = () => {
+    if (Number(balance) > 0.000001) {
+      return (
+        <Text pr={2} color="complimentary.900">
+          {balanceDisplay}
+        </Text>
+      );
+    } else {
+      return (
+        <Box mr={2} display="inline-block">
+          <SkeletonCircle size="2" startColor="complimentary.900" endColor="complimentary.400" />
+        </Box>
+      );
     }
   };
 
@@ -38,14 +63,12 @@ export const AssetsAccordian: React.FC<AssetsAccordianProps> = ({ selectedOption
           <h2>
             <AccordionButton _hover={{ cursor: 'default' }} borderRadius={'10px'} borderTopColor={'transparent'}>
               <Flex p={1} flexDirection="row" flex="1" alignItems="center">
-                <Image alt="atom" src={selectedOption.logo} boxSize="35px" mr={2} />
+                <Image alt="atom" src={selectedOption.logo} borderRadius={'full'} boxSize="35px" mr={2} />
                 <Text fontSize="16px" color={'white'}>
                   Available to stake
                 </Text>
               </Flex>
-              <Text pr={2} color="complimentary.900">
-                {balanceDisplay}
-              </Text>
+              {renderAssets()}
               <Text pr={2} color="complimentary.900">
                 {selectedOption.value.toUpperCase()}
               </Text>
@@ -62,9 +85,8 @@ export const AssetsAccordian: React.FC<AssetsAccordianProps> = ({ selectedOption
                   Liquid Staked
                 </Text>
               </Flex>
-              <Text pr={2} color="complimentary.900">
-                {renderQAssets()}
-              </Text>
+
+              {renderQAssets()}
               <Text pr={2} color="complimentary.900">
                 q{selectedOption.value.toUpperCase()}
               </Text>

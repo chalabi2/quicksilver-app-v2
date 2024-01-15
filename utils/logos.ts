@@ -65,9 +65,10 @@ export const getCosmostationUrl = (
   chainName: string,
   validatorAddr: string,
 ) => {
-  const cosmostationChainName =
-    convertChainName(chainName);
-  return `https://raw.githubusercontent.com/cosmostation/chainlist/main/chain/${cosmostationChainName}/moniker/${validatorAddr}.png`;
+  const env = process.env.NEXT_PUBLIC_CHAIN_ENV;
+  const convertedChainName = convertChainName(chainName);
+  const dynamicChainName = env === 'testnet' ? `${convertedChainName}-testnet` : convertedChainName;
+  return `https://raw.githubusercontent.com/cosmostation/chainlist/main/chain/${dynamicChainName}/moniker/${validatorAddr}.png`;
 };
 
 export const getKeybaseUrl = (

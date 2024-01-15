@@ -19,14 +19,15 @@ import {
   Spinner,
   InputGroup,
   InputLeftElement,
+  Link,
 } from '@chakra-ui/react';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { FaSearch } from 'react-icons/fa';
-
-import { useValidatorsQuery, useZoneQuery } from '@/hooks/useQueries';
 
 import { ValidatorsTable } from './validatorTable';
 
+import { useValidatorsQuery } from '@/hooks/useQueries';
+import { useValidatorLogos } from '@/hooks/useQueries';
 interface MultiModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -43,11 +44,12 @@ export const MultiModal: React.FC<MultiModalProps> = ({
   selectedChainName,
   selectedValidators,
   setSelectedValidators,
-  selectedChainId,
 }) => {
   const [searchTerm, setSearchTerm] = React.useState<string>('');
 
-  const { validatorsData, isLoading, isError } = useValidatorsQuery(selectedChainName);
+  const { validatorsData, isLoading } = useValidatorsQuery(selectedChainName);
+
+  const { data: logos } = useValidatorLogos(selectedChainName, validatorsData || []);
 
   const validators = validatorsData;
   const handleValidatorClick = (validator: { name: string; operatorAddress: string }) => {
@@ -80,8 +82,6 @@ export const MultiModal: React.FC<MultiModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="2xl">
-      {/* Set the size here */}
-
       <ModalContent borderRadius={'10px'} maxHeight="70vh" bgColor="#1A1A1A">
         <ModalHeader borderRadius="10px" bgColor="#1A1A1A" p={0}>
           <Accordion allowToggle>
@@ -104,17 +104,18 @@ export const MultiModal: React.FC<MultiModalProps> = ({
               <AccordionPanel textAlign="left" alignContent="center" justifyContent="center" mt={-2}>
                 <Text fontWeight="light" pl={6} maxW="95%" color="white" fontSize="16px" letterSpacing={'wider'}>
                   Choose which validator(s) you would like to liquid stake to. You can select from the list below or utilize the quick
-                  select to pick the highest ranked validators. To learn more about rainkings click here.
+                  select to pick the highest ranked validators. To learn more about rankings read the{' '}
+                  <Link textDecor={'underline'}>Validator Selection Doc</Link>.
                 </Text>
               </AccordionPanel>
             </AccordionItem>
           </Accordion>
         </ModalHeader>
-        <ModalCloseButton color="white" /> {/* Positioning by default should be top right */}
+        <ModalCloseButton color="white" />
         <Divider bgColor="complimentary.900" alignSelf="center" w="88%" m="auto" />
         <ModalBody bgColor="#1A1A1A" borderRadius={'6px'} justifyContent="center">
           {isLoading ? (
-            <Box display="flex" justifyContent="center" alignItems="center" height="200px">
+            <Box minH={'md'} display="flex" justifyContent="center" alignItems="center" height="200px">
               <Spinner h="50px" w="50px" color="complimentary.900" />
             </Box>
           ) : (
@@ -184,6 +185,7 @@ export const MultiModal: React.FC<MultiModalProps> = ({
                 </Box>
               </Flex>
               <ValidatorsTable
+                logos={logos || []}
                 validators={validators || []}
                 onValidatorClick={(validator) => {
                   const isSelected = selectedValidators.some((v) => v.name === validator.name);
@@ -209,7 +211,12 @@ export const MultiModal: React.FC<MultiModalProps> = ({
             </Box>
           )}
           <Text mt={'2'} fontSize={'sm'} fontWeight={'light'}>
-            {selectedValidators.length} / 8 Validators Selected
+            <>
+              <Text as="span" color="complimentary.900">
+                {selectedValidators.length}
+              </Text>
+              {' / 8 Validators Selected'}
+            </>
           </Text>
         </ModalBody>
         <ModalFooter></ModalFooter>

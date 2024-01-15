@@ -33,6 +33,27 @@ Please ensure your IDE is configured to use Typescript v4.9.3
 
 ### Repo
 
+**Governance**
+
+- add liquid staked governance (when its built)
+
+**UI/UX**
+
+- focus on mobile landscape breakpoints, (mainly staking page)
+
+**Mobile Menu**
+
+- graphic elements
+
+**DevOps**
+
+- make onboarding networks seamless
+
+**Blockers**
+
+- main net reward current & epoch queries
+- update grantee address in query & tx
+
 This repo was forked by, merged too, and is currently being worked on at [Repo Link](https://github.com/quicksilver-zone/quicksilver/tree/bunDev)
 
 This repo is now deprecated and any additional changes to the application will be merged to this repo (for the sake of continuity) upon this applications completion.
