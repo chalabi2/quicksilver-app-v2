@@ -110,7 +110,7 @@ export const SideHeader = () => {
           h="75px"
           w="75px"
           borderRadius="full"
-          src="/quicksilver/img/networks/quicksilver.svg"
+          src="/img/networks/quicksilver.svg"
           onClick={handleLogoClick}
           cursor="pointer"
           _hover={{
@@ -227,7 +227,7 @@ export const SideHeader = () => {
                         alt="Staking"
                         h="60px"
                         w="60px"
-                        src="/quicksilver/img/liquid.png"
+                        src="/img/liquid.png"
                       />
                     </Box>
                   </Tooltip>
@@ -257,7 +257,7 @@ export const SideHeader = () => {
                         alt="Governance"
                         h="60px"
                         w="65px"
-                        src="/quicksilver/img/governance.png"
+                        src="/img/governance.png"
                       />
                     </Box>
                   </Tooltip>
@@ -284,7 +284,7 @@ export const SideHeader = () => {
                         }}
                         alt="Assets"
                         h="55px"
-                        src="/quicksilver/img/assets.png"
+                        src="/img/assets.png"
                       />
                     </Box>
                   </Tooltip>
@@ -310,7 +310,7 @@ export const SideHeader = () => {
                         }}
                         alt="DeFi"
                         h="55px"
-                        src="/quicksilver/img/airdrop.png"
+                        src="/img/airdrop.png"
                       />
                     </Box>
                   </Tooltip>
@@ -337,7 +337,7 @@ export const SideHeader = () => {
                         }}
                         alt="DeFi"
                         h="55px"
-                        src="/quicksilver/img/defi.png"
+                        src="/img/defi.png"
                       />
                     </Box>
                   </Tooltip>

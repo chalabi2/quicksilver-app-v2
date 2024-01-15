@@ -2,7 +2,6 @@
   "name": "bun-qs",
   "version": "0.15.3",
   "private": true,
-  "homepage": "https://quicksilver-zone.github.io/quicksilver/",
   "scripts": {
     "build": "next build",
     "dev": "next dev",
