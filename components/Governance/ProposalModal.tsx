@@ -15,19 +15,18 @@ import {
   Divider,
   Heading,
   useColorMode,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import { cosmos } from 'interchain-query';
 import { Proposal } from 'interchain-query/cosmos/gov/v1/gov';
 import React, { useMemo, useState } from 'react';
 import { PieChart } from 'react-minimal-pie-chart';
 
-import { Votes } from '@/hooks';
-import { decodeUint8Arr, exponentiate, formatDate, getCoin, getExponent, getPercentage } from '@/utils';
-
 import { VoteResult, TimeDisplay, VoteRatio, NewLineText, StatusBadge, VoteOption } from './common';
 import { VoteColor } from './ProposalCard';
 import { VoteModal } from './VoteModal';
+
+import { Votes } from '@/hooks';
+import { decodeUint8Arr, exponentiate, formatDate, getCoin, getExponent, getPercentage } from '@/utils';
 
 const ProposalStatus = cosmos.gov.v1beta1.ProposalStatus;
 
@@ -52,7 +51,6 @@ export const ProposalModal = ({
 }) => {
   const [showMore, setShowMore] = useState(false);
   const voteModalControl = useDisclosure();
-  const { colorMode } = useColorMode();
 
   const coin = getCoin(chainName);
   const exponent = getExponent(chainName);
@@ -106,8 +104,6 @@ export const ProposalModal = ({
 
   const uint8ArrayValue = proposal.messages[0].value;
   const propinfo = decodeUint8Arr(uint8ArrayValue);
-
-  console.log(propinfo);
 
   const getTitleFromDecoded = (decodedStr: string) => {
     return decodedStr.slice(0, 250).match(/[A-Z][A-Za-z].*(?=\u0012)/)?.[0];

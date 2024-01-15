@@ -62,7 +62,7 @@ export const liquidStakeTx = (
 ) => {
   setIsError(false);
   setIsSigning(true);
-  console.log(validatorsSelect);
+
   const valToByte = (val: number) => {
     if (val > 1) {
       val = 1;
@@ -84,7 +84,7 @@ export const liquidStakeTx = (
 
   if (validatorsSelect.length > 0) {
     validatorsSelect.forEach((val) => {
-      memoBuffer = Buffer.concat([memoBuffer, addValidator(val.address, val.intent / 100)]);
+      memoBuffer = Buffer.concat([memoBuffer, addValidator(val.address, val.intent)]);
     });
     memoBuffer = Buffer.concat([Buffer.from([0x02, memoBuffer.length]), memoBuffer]);
   }
@@ -125,6 +125,7 @@ export const liquidStakeTx = (
 
     try {
       const response = await stargateClient.signAndBroadcast(address, [msgSend], fee, memo);
+
       setResp(JSON.stringify(response, null, 2));
       setIsSigning(false);
       showSuccessToast(toast, response.transactionHash, chainName);

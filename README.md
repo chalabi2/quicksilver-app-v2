@@ -33,32 +33,23 @@ Please ensure your IDE is configured to use Typescript v4.9.3
 
 ### Development ToDo
 
-**Staking Page**
+**Governance**
 
-- figure out a better way to fit the custom weight Ui into the modal.
-
-- need to handle number displays better, sometimes they show NaN or undefined but quickly render
-
-- need to update any QS endpoints that will potentially be outdated with the coming of 1.4
+- add liquid staked governance (when its built)
 
 **UI/UX**
 
-- customize wallet connect modal
-
-- threejs liquid metal sphere landing page
-
-- Mobile breakpoints
-
-**Defi**
-
-- design
-
-- build
-
-**Assets**
-
-- design
-
-- build
+- focus on mobile landscape breakpoints, (mainly staking page)
 
 **Mobile Menu**
+
+- graphic elements
+
+**DevOps**
+
+- make onboarding networks seamless
+
+**Blockers**
+
+- main net reward current & epoch queries
+- update grantee address in query & tx
