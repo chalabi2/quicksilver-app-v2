@@ -1,10 +1,9 @@
 import { Container, Text, SlideFade } from '@chakra-ui/react';
-import dynamic from 'next/dynamic';
 import Head from 'next/head';
 
 import DefiTable from '@/components/Defi/defiBox';
 
-export function Home() {
+export default function Home() {
   return (
     <>
       <SlideFade offsetY={'200px'} in={true} style={{ width: '100%' }}>
@@ -32,13 +31,3 @@ export function Home() {
     </>
   );
 }
-
-const DynamicDefiPage = dynamic(() => Promise.resolve(Home), {
-  ssr: false,
-});
-
-const AssetsWrapper = () => {
-  return <DynamicDefiPage />;
-};
-
-export default AssetsWrapper;

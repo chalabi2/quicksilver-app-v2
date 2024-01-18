@@ -27,7 +27,7 @@ const AboutPage = () => {
             QuickSilver is a state-of-the-art platform for liquid staking. We allow users to stake their cryptocurrency in a flexible and
             secure manner. Our mission is to provide a seamless staking experience while maximizing the earning potential for our users.
           </Text>
-          <Link href="/privacy-policy" color="orange.400" alignSelf="left">
+          <Link href="/quicksilver/privacy-policy" color="orange.400" alignSelf="left">
             Privacy Policy
           </Link>
         </VStack>

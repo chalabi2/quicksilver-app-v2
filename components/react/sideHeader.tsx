@@ -29,6 +29,7 @@ import { DrawerControlProvider } from '@/state/chains/drawerControlProvider';
 
 import { WalletButton } from '../wallet-button';
 
+
 export const SideHeader = () => {
   const router = useRouter();
   const [selectedPage, setSelectedPage] = useState('');
@@ -349,16 +350,16 @@ export const SideHeader = () => {
               {showSocialLinks && (
                 <VStack justifyContent="center" alignItems="center" spacing={16}>
                   <Link href="https://quicksilver.zone/" isExternal>
-                  <Tooltip borderLeft="4px solid rgba(255, 128, 0, 0.9)" label="About" placement="right">
-                    <Box
-                      _hover={{
-                        cursor: 'pointer',
-                        boxShadow: `0 0 15px 5px ${commonBoxShadowColor}, inset 0 0 50px 5px ${commonBoxShadowColor}`,
-                      }}
-                    >
-                      <FaInfo size={'25px'} color="rgb(255, 128, 0)" />
-                    </Box>
-                  </Tooltip>
+                    <Tooltip borderLeft="4px solid rgba(255, 128, 0, 0.9)" label="About" placement="right">
+                      <Box
+                        _hover={{
+                          cursor: 'pointer',
+                          boxShadow: `0 0 15px 5px ${commonBoxShadowColor}, inset 0 0 50px 5px ${commonBoxShadowColor}`,
+                        }}
+                      >
+                        <FaInfo size={'25px'} color="rgb(255, 128, 0)" />
+                      </Box>
+                    </Tooltip>
                   </Link>
                   <Link href="https://docs.quicksilver.zone/" isExternal>
                     <Tooltip borderLeft="4px solid rgba(255, 128, 0, 0.9)" label="Docs" placement="right">

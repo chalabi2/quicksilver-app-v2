@@ -3,9 +3,9 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { test, expect, mock } from 'bun:test';
 import { useState } from 'react';
 
-import { NetworkSelect } from '@/components';
-
 import Staking from '../pages/staking';
+
+import { NetworkSelect } from '@/components';
 
 const networks = [
   {
