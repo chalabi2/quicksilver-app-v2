@@ -21,13 +21,12 @@ import { Proposal } from 'interchain-query/cosmos/gov/v1/gov';
 import React, { useMemo, useState } from 'react';
 import { FaSearch } from 'react-icons/fa';
 
-import { useVotingData } from '@/hooks';
-import { decodeUint8Arr } from '@/utils';
-
 import { DisconnectedContent, Loader } from './common';
 import { ProposalCard } from './ProposalCard';
 import { ProposalModal } from './ProposalModal';
 
+import { useVotingData } from '@/hooks';
+import { decodeUint8Arr } from '@/utils';
 
 function RotateIcon({ isOpen }: { isOpen: boolean }) {
   return (
@@ -63,10 +62,9 @@ export const VotingSection = ({ chainName }: { chainName: ChainName }) => {
       let periodMatches = true;
       let proposalMatches = true;
 
-      // Constants for proposal status (these values might be different in your application)
-      const VOTING_PERIOD_STATUS = 2; // Example value for 'Voting Period'
-      const PASSED_STATUS = 3; // Example value for 'Passed'
-      const REJECTED_STATUS = 4; // Example value for 'Rejected'
+      const VOTING_PERIOD_STATUS = 2;
+      const PASSED_STATUS = 3;
+      const REJECTED_STATUS = 4;
 
       // Filter by period
       switch (selectedPeriodOption) {

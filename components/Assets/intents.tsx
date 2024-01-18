@@ -13,14 +13,14 @@ import {
   SkeletonCircle,
   SkeletonText,
 } from '@chakra-ui/react';
+
 import { Key, useState } from 'react';
 
+import SignalIntentModal from './modals/signalIntentProcess';
 
 import { useIntentQuery, useValidatorLogos, useValidatorsQuery } from '@/hooks/useQueries';
 import { networks as prodNetworks, testNetworks as devNetworks } from '@/state/chains/prod';
 import { truncateString } from '@/utils';
-
-import SignalIntentModal from './modals/signalIntentProcess';
 
 export interface StakingIntentProps {
   address: string;
@@ -30,7 +30,7 @@ export interface StakingIntentProps {
 const StakingIntent: React.FC<StakingIntentProps> = ({ address, isWalletConnected }) => {
   const networks = process.env.NEXT_PUBLIC_CHAIN_ENV === 'mainnet' ? prodNetworks : devNetworks;
 
-  const chains = ['Cosmos', 'Osmosis', 'Stargaze', 'Regen', 'Sommelier'];
+  const chains = ['Cosmos', 'Osmosis', 'Stargaze', 'Regen', 'Sommelier', 'Juno'];
   const [currentChainIndex, setCurrentChainIndex] = useState(0);
 
   const [isSignalIntentModalOpen, setIsSignalIntentModalOpen] = useState(false);
@@ -158,7 +158,7 @@ const StakingIntent: React.FC<StakingIntentProps> = ({ address, isWalletConnecte
         </Flex>
 
         <VStack pb={4} overflowY="auto" gap={4} spacing={2} align="stretch" maxH="250px">
-          {validatorsWithDetails.map(
+          { validatorsWithDetails.length > 0 && validatorsWithDetails.map(
             (validator: { logoUrl: string; moniker: string; percentage: string }, index: Key | null | undefined) => (
               <Flex key={index} justifyContent="space-between" w="full" alignItems="center">
                 <Flex alignItems="center" gap={2}>
@@ -200,7 +200,7 @@ const StakingIntent: React.FC<StakingIntentProps> = ({ address, isWalletConnecte
                 </Text>
               </Flex>
             ),
-          )}
+          ) || <Text fontSize="md">No intent set</Text>}
         </VStack>
       </VStack>
     </Box>

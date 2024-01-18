@@ -33,6 +33,8 @@ import { quicksilver } from 'quicksilverjs';
 import React, { useCallback, useEffect, useState } from 'react';
 import { FaStar } from 'react-icons/fa';
 
+import StakingProcessModal from './modals/stakingProcessModal';
+import TransferProcessModal from './modals/transferProcessModal';
 
 import { useTx } from '@/hooks';
 import {
@@ -46,9 +48,6 @@ import {
 } from '@/hooks/useQueries';
 import { getExponent } from '@/utils';
 import { shiftDigits } from '@/utils';
-
-import StakingProcessModal from './modals/stakingProcessModal';
-import TransferProcessModal from './modals/transferProcessModal';
 
 type StakingBoxProps = {
   selectedOption: {
@@ -88,7 +87,9 @@ export const StakingBox = ({
 
   const { address: qAddress } = useChain('quicksilver');
   const exp = getExponent(selectedOption.chainName);
+
   const { balance, isLoading } = useBalanceQuery(selectedOption.chainName, address ?? '');
+
   const { balance: allBalances } = useAllBalancesQuery(selectedOption.chainName, address ?? '');
 
   const { balance: qBalance } = useQBalanceQuery('quicksilver', qAddress ?? '', selectedOption.value.toLowerCase());
@@ -517,8 +518,13 @@ export const StakingBox = ({
                     <Tooltip hasArrow label={liquidStakeTooltip} isDisabled={!isLiquidStakeDisabled}>
                       <Button
                         width="100%"
+                        _active={{
+                          transform: 'scale(0.95)',
+                          color: 'complimentary.800',
+                        }}
                         _hover={{
-                          bgColor: 'complimentary.1000',
+                          bgColor: 'rgba(255,128,0, 0.25)',
+                          color: 'complimentary.300',
                         }}
                         onClick={openStakingModal}
                         isDisabled={Number(tokenAmount) === 0 || !address || Number(tokenAmount) < 0.1}
@@ -794,8 +800,13 @@ export const StakingBox = ({
                 </HStack>
                 <Button
                   width="100%"
+                  _active={{
+                    transform: 'scale(0.95)',
+                    color: 'complimentary.800',
+                  }}
                   _hover={{
-                    bgColor: 'complimentary.1000',
+                    bgColor: 'rgba(255,128,0, 0.25)',
+                    color: 'complimentary.300',
                   }}
                   onClick={handleLiquidUnstake}
                   isDisabled={Number(tokenAmount) === 0 || !address || isSigning || Number(qBalance?.balance.amount) === 0}

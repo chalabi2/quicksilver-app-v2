@@ -15,15 +15,20 @@ import {
   StatNumber,
   Spinner,
 } from '@chakra-ui/react';
-import chains from '@chalabi/chain-registry';
+import chains from 'chain-registry';
+
 import { coins, StdFee } from '@cosmjs/amino';
+
 import styled from '@emotion/styled';
+
 import { assets } from 'chain-registry';
+
 import React, { useEffect, useState } from 'react';
 import { cosmos } from 'stridejs';
 
 import { useTx } from '@/hooks';
 import { useZoneQuery } from '@/hooks/useQueries';
+
 import { shiftDigits } from '@/utils';
 
 const ChakraModalContent = styled(ModalContent)`
@@ -289,8 +294,13 @@ export const TransferProcessModal: React.FC<StakingModalProps> = ({
                   <Button
                     mt={4}
                     width="55%"
+                    _active={{
+                      transform: 'scale(0.95)',
+                      color: 'complimentary.800',
+                    }}
                     _hover={{
-                      bgColor: 'complimentary.500',
+                      bgColor: 'rgba(255,128,0, 0.25)',
+                      color: 'complimentary.300',
                     }}
                     onClick={hanleTokenizeShares}
                   >
@@ -306,8 +316,13 @@ export const TransferProcessModal: React.FC<StakingModalProps> = ({
                   <Button
                     mt={4}
                     width="55%"
+                    _active={{
+                      transform: 'scale(0.95)',
+                      color: 'complimentary.800',
+                    }}
                     _hover={{
-                      bgColor: 'complimentary.500',
+                      bgColor: 'rgba(255,128,0, 0.25)',
+                      color: 'complimentary.300',
                     }}
                     onClick={handleSend}
                   >
@@ -328,8 +343,13 @@ export const TransferProcessModal: React.FC<StakingModalProps> = ({
                       </Text>
                       <Button
                         w="55%"
+                        _active={{
+                          transform: 'scale(0.95)',
+                          color: 'complimentary.800',
+                        }}
                         _hover={{
-                          bgColor: '#181818',
+                          bgColor: 'rgba(255,128,0, 0.25)',
+                          color: 'complimentary.300',
                         }}
                         mt={4}
                         onClick={() => setStep(1)}

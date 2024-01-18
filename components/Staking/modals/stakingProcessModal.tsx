@@ -22,18 +22,19 @@ import { coins, StdFee } from '@cosmjs/amino';
 import { useChain } from '@cosmos-kit/react';
 import styled from '@emotion/styled';
 import { bech32 } from 'bech32';
-import { assets } from 'chain-registry';
-import chains from 'chain-registry';
-import { cosmos } from 'interchain-query';
-import React, { useEffect, useState } from 'react';
+import { assets, chains } from 'chain-registry';
 
-import { useTx } from '@/hooks';
-import { useZoneQuery } from '@/hooks/useQueries';
-import { shiftDigits } from '@/utils';
+import { cosmos } from 'interchain-query';
+
+import React, { useEffect, useState } from 'react';
 
 import { MultiModal } from './validatorSelectionModal';
 
+import { useZoneQuery } from '@/hooks/useQueries';
 
+import { shiftDigits } from '@/utils';
+
+import { useTx } from '@/hooks';
 
 const ChakraModalContent = styled(ModalContent)`
   position: relative;
@@ -97,6 +98,8 @@ export const StakingProcessModal: React.FC<StakingModalProps> = ({ isOpen, onClo
     newChainName = 'osmosistestnet';
   } else if (selectedOption?.chainId === 'regen-redwood-1') {
     newChainName = 'regen';
+  } else if (selectedOption?.chainId === 'sommelier-3') {
+    newChainName = 'sommelier';
   } else {
     // Default case
     newChainName = selectedOption?.chainName;
@@ -154,11 +157,11 @@ export const StakingProcessModal: React.FC<StakingModalProps> = ({ isOpen, onClo
   const calculateIntents = () => {
     return selectedValidators.map((validator) => {
       // For each validator, calculate the weight based on whether default weights are used
-      const weight = useDefaultWeights ? defaultWeight : weights[validator.operatorAddress];
+      const weight = useDefaultWeights ? defaultWeight : weights[validator.operatorAddress] || 0;
 
       return {
         address: validator.operatorAddress,
-        intent: weight.toFixed(4), // Ensure 4 decimal places
+        intent: weight.toFixed(4),
       };
     });
   };
@@ -244,16 +247,23 @@ export const StakingProcessModal: React.FC<StakingModalProps> = ({ isOpen, onClo
   });
 
   const mainTokens = assets.find(({ chain_name }) => chain_name === newChainName);
-  const fees = chains.chains.find(({ chain_name }) => chain_name === newChainName)?.fees?.fee_tokens;
+  const fees = chains.find(({ chain_name }) => chain_name === newChainName)?.fees?.fee_tokens;
   const mainDenom = mainTokens?.assets[0].base ?? '';
-  const fixedMinGasPrice = fees?.find(({ denom }) => denom === mainDenom)?.average_gas_price ?? '';
-  const feeAmount = shiftDigits(fixedMinGasPrice, 6);
+  let feeAmount;
+  if (selectedOption?.chainName === 'sommelier') {
+    // Hardcoded value for sommelier-3
+    feeAmount = '10000';
+  } else {
+    // Default case
+    const fixedMinGasPrice = fees?.find(({ denom }) => denom === mainDenom)?.average_gas_price ?? '';
+    feeAmount = shiftDigits(fixedMinGasPrice, 6).toString();
+  }
 
   const fee: StdFee = {
     amount: [
       {
         denom: mainDenom,
-        amount: feeAmount.toString(),
+        amount: feeAmount,
       },
     ],
     gas: '500000',
@@ -443,8 +453,13 @@ export const StakingProcessModal: React.FC<StakingModalProps> = ({ isOpen, onClo
                   <Button
                     mt={4}
                     width="55%"
+                    _active={{
+                      transform: 'scale(0.95)',
+                      color: 'complimentary.800',
+                    }}
                     _hover={{
-                      bgColor: 'complimentary.500',
+                      bgColor: 'rgba(255,128,0, 0.25)',
+                      color: 'complimentary.300',
                     }}
                     onClick={handleStepOneButtonClick}
                   >
@@ -491,8 +506,13 @@ export const StakingProcessModal: React.FC<StakingModalProps> = ({ isOpen, onClo
                   </Text>
                   <HStack mt={4} justifyContent={'center'} alignItems={'center'}>
                     <Button
+                      _active={{
+                        transform: 'scale(0.95)',
+                        color: 'complimentary.800',
+                      }}
                       _hover={{
-                        bgColor: 'complimentary.500',
+                        bgColor: 'rgba(255,128,0, 0.25)',
+                        color: 'complimentary.300',
                       }}
                       minW={'100px'}
                       onClick={handleEqualWeightAssignment}
@@ -502,8 +522,13 @@ export const StakingProcessModal: React.FC<StakingModalProps> = ({ isOpen, onClo
                     {selectedValidators.length > 1 && (
                       <Button
                         minW={'100px'}
+                        _active={{
+                          transform: 'scale(0.95)',
+                          color: 'complimentary.800',
+                        }}
                         _hover={{
-                          bgColor: 'complimentary.500',
+                          bgColor: 'rgba(255,128,0, 0.25)',
+                          color: 'complimentary.300',
                         }}
                         onClick={handleCustomWeightMode}
                       >
@@ -588,7 +613,18 @@ export const StakingProcessModal: React.FC<StakingModalProps> = ({ isOpen, onClo
                     >
                       ←
                     </Button>
-                    <Button isDisabled={!isCustomValid} onClick={handleNextInCustomWeightMode}>
+                    <Button
+                      _active={{
+                        transform: 'scale(0.95)',
+                        color: 'complimentary.800',
+                      }}
+                      _hover={{
+                        bgColor: 'rgba(255,128,0, 0.25)',
+                        color: 'complimentary.300',
+                      }}
+                      isDisabled={!isCustomValid}
+                      onClick={handleNextInCustomWeightMode}
+                    >
                       Next
                     </Button>
                   </Flex>
@@ -622,8 +658,13 @@ export const StakingProcessModal: React.FC<StakingModalProps> = ({ isOpen, onClo
                     </Text>
                     <Button
                       w="55%"
+                      _active={{
+                        transform: 'scale(0.95)',
+                        color: 'complimentary.800',
+                      }}
                       _hover={{
-                        bgColor: 'complimentary.500',
+                        bgColor: 'rgba(255,128,0, 0.25)',
+                        color: 'complimentary.300',
                       }}
                       mt={4}
                       onClick={(event) => handleLiquidStake(event)}
@@ -663,8 +704,13 @@ export const StakingProcessModal: React.FC<StakingModalProps> = ({ isOpen, onClo
                       </Text>
                       <Button
                         w="55%"
+                        _active={{
+                          transform: 'scale(0.95)',
+                          color: 'complimentary.800',
+                        }}
                         _hover={{
-                          bgColor: 'complimentary.500',
+                          bgColor: 'rgba(255,128,0, 0.25)',
+                          color: 'complimentary.300',
                         }}
                         mt={4}
                         onClick={() => setStep(1)}

@@ -21,13 +21,12 @@ import { Proposal } from 'interchain-query/cosmos/gov/v1/gov';
 import React, { useMemo, useState } from 'react';
 import { PieChart } from 'react-minimal-pie-chart';
 
-import { Votes } from '@/hooks';
-import { decodeUint8Arr, exponentiate, formatDate, getCoin, getExponent, getPercentage } from '@/utils';
-
 import { VoteResult, TimeDisplay, VoteRatio, NewLineText, StatusBadge, VoteOption } from './common';
 import { VoteColor } from './ProposalCard';
 import { VoteModal } from './VoteModal';
 
+import { Votes } from '@/hooks';
+import { decodeUint8Arr, exponentiate, formatDate, getCoin, getExponent, getPercentage } from '@/utils';
 
 const ProposalStatus = cosmos.gov.v1beta1.ProposalStatus;
 
@@ -189,8 +188,13 @@ export const ProposalModal = ({
                 <TimeDisplay title="Voting Ends" time={isDepositPeriod ? 'Not Specified Yet' : formatDate(proposal.votingEndTime)} />
                 <Button
                   isDisabled={!isVotingPeriod}
+                  _active={{
+                    transform: 'scale(0.95)',
+                    color: 'complimentary.800',
+                  }}
                   _hover={{
-                    bgColor: '#181818',
+                    bgColor: 'rgba(255,128,0, 0.25)',
+                    color: 'complimentary.300',
                   }}
                   w="140px"
                   onClick={voteModalControl.onOpen}
@@ -288,8 +292,13 @@ export const ProposalModal = ({
                 <NewLineText text={renderedDescription} />
                 {description && description.length > 200 && (
                   <Button
+                    _active={{
+                      transform: 'scale(0.95)',
+                      color: 'complimentary.800',
+                    }}
                     _hover={{
-                      bgColor: '#181818',
+                      bgColor: 'rgba(255,128,0, 0.25)',
+                      color: 'complimentary.300',
                     }}
                     onClick={() => setShowMore(!showMore)}
                     size="sm"
@@ -301,7 +310,7 @@ export const ProposalModal = ({
             </ModalBody>
 
             <ModalFooter>
-              <Button _hover={{ bgColor: 'complimentary.900' }} mt={-4} color="white" variant="ghost" onClick={onClose}>
+              <Button _hover={{ color: 'complimentary.900' }} mt={-4} color="white" variant="ghost" onClick={onClose}>
                 Close
               </Button>
             </ModalFooter>

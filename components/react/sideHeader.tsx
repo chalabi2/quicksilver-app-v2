@@ -37,7 +37,7 @@ export const SideHeader = () => {
 
   useEffect(() => {
     const handleRouteChange = (url: string) => {
-      const path = url.split('/quicksilver/')[1];
+      const path = url.split('/')[1];
       setSelectedPage(path);
     };
 
@@ -133,7 +133,7 @@ export const SideHeader = () => {
                 {['Airdrop', 'Assets', 'Defi', 'Governance', 'Staking'].map((item) => (
                   <Box key={item} mb={4} position="relative">
                     <Link
-                      href={`/quicksilver/${item.toLowerCase()}`}
+                      href={`/${item.toLowerCase()}`}
                       fontSize="xl"
                       fontWeight="medium"
                       color="white"
@@ -348,9 +348,9 @@ export const SideHeader = () => {
             <ScaleFade initialScale={0.5} in={showSocialLinks}>
               {showSocialLinks && (
                 <VStack justifyContent="center" alignItems="center" spacing={16}>
+                  <Link href="https://quicksilver.zone/" isExternal>
                   <Tooltip borderLeft="4px solid rgba(255, 128, 0, 0.9)" label="About" placement="right">
                     <Box
-                      onClick={() => router.push('/about')}
                       _hover={{
                         cursor: 'pointer',
                         boxShadow: `0 0 15px 5px ${commonBoxShadowColor}, inset 0 0 50px 5px ${commonBoxShadowColor}`,
@@ -359,6 +359,7 @@ export const SideHeader = () => {
                       <FaInfo size={'25px'} color="rgb(255, 128, 0)" />
                     </Box>
                   </Tooltip>
+                  </Link>
                   <Link href="https://docs.quicksilver.zone/" isExternal>
                     <Tooltip borderLeft="4px solid rgba(255, 128, 0, 0.9)" label="Docs" placement="right">
                       <Box
@@ -411,7 +412,7 @@ export const SideHeader = () => {
                       </Box>
                     </Link>
                   </Tooltip>
-                  <Tooltip borderLeft="4px solid rgba(255, 128, 0, 0.9)" label="Privacy Policy" placement="right">
+                  {/*<Tooltip borderLeft="4px solid rgba(255, 128, 0, 0.9)" label="Privacy Policy" placement="right">
                     <Box
                       onClick={() => router.push('/privacy-policy')}
                       _hover={{
@@ -422,7 +423,7 @@ export const SideHeader = () => {
                     >
                       <MdPrivacyTip size={'25px'} color="rgb(255, 128, 0)" />
                     </Box>
-                  </Tooltip>
+                    </Tooltip>*/}
                 </VStack>
               )}
             </ScaleFade>

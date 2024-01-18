@@ -1,4 +1,5 @@
 import { Box, Container, Flex, VStack, HStack, Stat, StatLabel, StatNumber, SlideFade, SkeletonCircle } from '@chakra-ui/react';
+
 import dynamic from 'next/dynamic';
 import Head from 'next/head';
 import { useState } from 'react';
@@ -40,6 +41,7 @@ export default function Staking() {
     // Default case
     newChainId = selectedNetwork.chainId;
   }
+
   const { APY, isLoading, isError } = useAPYQuery(newChainId);
   const [balance, setBalance] = useState('');
   const [qBalance, setQBalance] = useState('');

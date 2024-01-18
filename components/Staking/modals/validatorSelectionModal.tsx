@@ -24,11 +24,10 @@ import {
 import React from 'react';
 import { FaSearch } from 'react-icons/fa';
 
+import { ValidatorsTable } from './validatorTable';
 
 import { useValidatorsQuery } from '@/hooks/useQueries';
 import { useValidatorLogos } from '@/hooks/useQueries';
-
-import { ValidatorsTable } from './validatorTable';
 interface MultiModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -202,8 +201,13 @@ export const MultiModal: React.FC<MultiModalProps> = ({
                   onClick={onClose}
                   h="30px"
                   w="25%"
+                  _active={{
+                    transform: 'scale(0.95)',
+                    color: 'complimentary.800',
+                  }}
                   _hover={{
-                    bgColor: '#181818',
+                    bgColor: 'rgba(255,128,0, 0.25)',
+                    color: 'complimentary.300',
                   }}
                 >
                   Return
